@@ -777,8 +777,6 @@
       
         
       
-        
-      
     
     
     
@@ -1016,34 +1014,6 @@
     
   
     What is MCP?
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../getting-started/best-llms-for-agents/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Best LLMs for Agents
   
 
     
@@ -8211,8 +8181,6 @@
       
         
       
-        
-      
     
     
     
@@ -8365,36 +8333,6 @@
     
   
     Comparisons
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-    
-  
-  
-    <li class="md-nav__item">
-      <a href="../../blog/category/compliance--audit/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Compliance &amp; Audit
   
 
     
@@ -11492,7 +11430,7 @@
 <li><strong><code>promptise models check</code> said "Usable." for a local model that was not running</strong> -- the check only looks at configuration, and Ollama needs none, so <code>promptise models check ollama:llama3.1</code> printed <code>Usable.</code> and exited <code>0</code> on a machine without Ollama. The verdict is now <code>Configuration OK</code>, with a note that nothing was called and that <code>--ping</code> makes a real call. For a keyless provider (Ollama) or an endpoint on this machine (<code>OPENAI_BASE_URL=http://localhost:8000/v1</code>), the check also tries a TCP connection (1 s timeout, nothing sent) and, when nothing answers, prints <code>Not reachable. ... nothing is listening at http://localhost:11434 — is Ollama running? (ollama serve) ...</code> and exits <code>1</code>.</li>
 <li><strong><code>promptise models check</code> printed the route as a template</strong> -- <code>route: OpenAI-compatible endpoint {endpoint}/v1</code> for Ollama. The route now shows the URL requests go to: <code>http://localhost:11434/v1</code> by default or the normalised <code>OLLAMA_HOST</code>, and Bedrock's and Vertex AI's region and project filled in from the environment (a value that is still missing stays a <code>{placeholder}</code> next to its <code>MISSING</code> line). The CLI and <code>resolve_model()</code> build the URL with the same code.</li>
 <li><strong>A failed <code>--ping</code> showed only the provider's error</strong> -- <code>OpenAIConnectionError: Connection error.</code> with no hint. The error is now followed by a <code>→</code> line saying what it most likely means and what to do: nothing listening (with <code>ollama serve</code> / <code>OLLAMA_HOST</code> for Ollama, or the variable the address came from), a timeout, a rejected key (naming the variable and where to get a new one), a model the server does not have (<code>ollama pull &lt;model&gt;</code>; the Azure deployment <em>Name</em> column; the provider's model list), missing model access (Bedrock), an account out of credits, a rate limit, or a provider outage.</li>
-<li><strong>Docs: Claude model IDs written with dots</strong> -- the quick-recommendation table on <a href="https://docs.promptise.com/getting-started/best-llms-for-agents/">Best LLMs for agents</a>, the FAQ and the core overview used <code>anthropic:claude-sonnet-4.6</code>, <code>anthropic:claude-opus-4.6</code> and <code>anthropic:claude-sonnet-4.5</code>, which Anthropic's API rejects. They now use the real IDs (<code>claude-sonnet-4-6</code>, <code>claude-opus-4-6</code>, <code>claude-sonnet-4-5</code>), as the model tables on the same page already did.</li>
+<li><strong>Docs: Claude model IDs written with dots</strong> -- the quick-recommendation table on the Best LLMs for agents page, the FAQ and the core overview used <code>anthropic:claude-sonnet-4.6</code>, <code>anthropic:claude-opus-4.6</code> and <code>anthropic:claude-sonnet-4.5</code>, which Anthropic's API rejects. They now use the real IDs (<code>claude-sonnet-4-6</code>, <code>claude-opus-4-6</code>, <code>claude-sonnet-4-5</code>), as the model tables on the same page already did.</li>
 <li><strong>Approval: the gate's own denials left no record, and classifier denials used up the retry limit</strong> -- once <code>max_retries_after_deny</code> (3) was reached, or <code>max_pending</code> requests were waiting, calls were denied before the handler ran, so an audit log written from the handler had no entry for them. Denials by classifier rules also counted towards the limit: after a deny rule refused three over-the-limit refunds, a $5 refund the allow rule covers came back "permanently denied". Every decision now reaches <code>ApprovalPolicy(on_decision=...)</code> and emits <code>approval.denied</code> / <code>approval.granted</code> with <code>decided_by</code>. Only a reviewer's denials (<code>decided_by="reviewer"</code>, including the classifier's fallback) and timeouts count towards the limit, and only a reviewer's approval resets it; classifier decisions don't touch it. The count stays per <code>deny_scope</code> (default: same user and session).</li>
 <li><strong>AutoApprovalClassifier: concurrent decisions overwrote each other's trace</strong> -- <code>last_trace</code> was one shared attribute, so with several gated calls in flight an escalated call waiting on a human was logged as <code>fallback</code> with an empty reason after a read-only call finished in between. Each decision now carries its own <code>ClassifierDecisionTrace</code> as <code>ApprovalDecision.trace</code> (on a copy of the fallback's decision; the handler's object isn't mutated).</li>
 <li><strong>Context compaction dropped the user's question</strong> -- once a tool loop passed 6 tool results (call 7 on, with the default ReAct agent's <code>context_scope="auto"</code>), the compacted view kept only the first input message that was a <code>HumanMessage</code> object. A question passed as a <code>{"role": "user", ...}</code> dict, the form the docs and quickstart use, disappeared, and the agent asked what to do or answered partially. Input messages are now converted to LangChain messages when the graph state is created (dicts, tuples and strings alike), and compaction always sends the <strong>current</strong> user question: the last user message of the input.</li>
@@ -11861,7 +11799,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="October 20, 2026 17:21:37 UTC">2026-10-20</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="October 20, 2026 20:38:11 UTC">2026-10-20</span>
   </span>
 
     
