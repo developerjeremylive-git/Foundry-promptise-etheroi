@@ -9973,7 +9973,11 @@
 <tbody>
 <tr>
 <td><code>"process stopped"</code></td>
-<td>Not run yet at <code>stop()</code> (queued, held, running or still inside a trigger), or arriving while the process is stopping or stopped</td>
+<td>Not run yet at <code>stop()</code> (queued, held, running or still inside a trigger), or arriving while the process is stopping or stopped. A run that finished (its <code>task_completed</code> hooks may still be running) is not dead-lettered</td>
+</tr>
+<tr>
+<td><code>"budget: max_runs_per_day"</code></td>
+<td>The run was refused because <code>max_runs_per_day</code> was reached; redeliver it after the daily reset</td>
 </tr>
 <tr>
 <td><code>"process restarting"</code></td>
@@ -9996,6 +10000,10 @@
 <td><code>inject()</code> or a retry found the queue full</td>
 </tr>
 <tr>
+<td><code>"trigger buffer full"</code></td>
+<td>An event or message trigger's 100-event buffer was full (also counted in the trigger's <code>dropped_events</code>)</td>
+</tr>
+<tr>
 <td><code>"flagged by payload scan"</code></td>
 <td><code>trigger_delivery.scan_payloads</code> flagged the payload</td>
 </tr>
@@ -10016,7 +10024,7 @@
 </span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="n">requeued</span> <span class="o">=</span> <span class="k">await</span> <span class="n">process</span><span class="o">.</span><span class="n">redeliver_dead_letters</span><span class="p">()</span>  <span class="c1"># or event_ids=[...]</span>
 </span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="n">process</span><span class="o">.</span><span class="n">clear_dead_letters</span><span class="p">()</span>
 </span></code></pre></div>
-<p><code>redeliver_dead_letters(event_ids=None)</code> puts the events back on the queue and returns how many it re-queued; events that don't fit stay in the list.</p>
+<p><code>redeliver_dead_letters(event_ids=None)</code> puts the events back on the queue and returns how many it re-queued; events that don't fit stay in the list. Like <code>inject()</code>, it wakes a process suspended for <code>idle_timeout</code>.</p>
 <hr />
 <h2 id="status">Status<a class="headerlink" href="#status" title="Link to this section">&para;</a></h2>
 <p><code>process.status()</code> returns a JSON-serializable dict:</p>
@@ -10066,7 +10074,7 @@
 </tr>
 <tr>
 <td><code>triggers</code></td>
-<td>One dict per trigger: <code>id</code>, <code>type</code>, <code>source</code> (<code>"config"</code> or <code>"dynamic"</code>), and for a file watch <code>dropped_events</code> and <code>pending_events</code></td>
+<td>One dict per trigger: <code>id</code>, <code>type</code>, <code>source</code> (<code>"config"</code> or <code>"dynamic"</code>), for a file watch <code>dropped_events</code> and <code>pending_events</code>, and for an event or message trigger <code>dropped_events</code></td>
 </tr>
 <tr>
 <td><code>custom_tool_count</code>, <code>rebuild_count</code>, <code>spawned_process_count</code></td>
@@ -10332,7 +10340,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="October 19, 2026 22:24:07 UTC">2026-10-19</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="October 20, 2026 21:55:30 UTC">2026-10-20</span>
   </span>
 
     

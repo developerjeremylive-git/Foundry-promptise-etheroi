@@ -9816,7 +9816,7 @@
 </span></code></pre></div>
 <hr />
 <h2 id="trigger-ids">Trigger IDs<a class="headerlink" href="#trigger-ids" title="Link to this section">&para;</a></h2>
-<p>Inside a process, each trigger in <code>config.triggers</code> gets a stable ID of the form <code>&lt;type&gt;-&lt;digest&gt;</code>, for example <code>cron-6d904fd75c</code>. The digest is a hash of the trigger's config (secret values are masked before hashing), so:</p>
+<p>Inside a process, each trigger in <code>config.triggers</code> gets a stable ID of the form <code>&lt;type&gt;-&lt;digest&gt;</code>, for example <code>cron-6d904fd75c</code>. The digest is a hash of the trigger's config (secret values are masked before hashing: <code>hmac_secret</code>, <code>custom_config</code> keys that look like credentials, and the user info of URLs; a function <code>filter_expression</code> counts by its module and name), so:</p>
 <ul>
 <li>the ID does not depend on the trigger's position: removing one trigger leaves the others' IDs unchanged;</li>
 <li>the ID is the same after a restart, and the same in every process with that trigger config;</li>
@@ -10023,6 +10023,7 @@
 </span><span id="__span-11-20"><a id="__codelineno-11-20" name="__codelineno-11-20" href="#__codelineno-11-20"></a><span class="n">trigger</span> <span class="o">=</span> <span class="n">create_trigger</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
 </span></code></pre></div>
 <p>The factory callable must accept <code>(config: TriggerConfig, *, event_bus=None, broker=None)</code> and return a <code>BaseTrigger</code> instance. Use <code>config.custom_config</code> to pass parameters to your trigger.</p>
+<p>A manifest started from the CLI can use a custom type when the module that registers it is imported first: <code>promptise runtime start agents/ --import myapp.triggers</code> (and <code>promptise runtime validate agents/ --import myapp.triggers</code>; repeat <code>--import</code> for several modules, and the current directory is importable). Without it, <code>validate</code> and <code>start</code> report <code>unknown trigger type 'sqs'</code> before anything starts.</p>
 <h3 id="registry-api">Registry API<a class="headerlink" href="#registry-api" title="Link to this section">&para;</a></h3>
 <table>
 <thead>
@@ -10200,7 +10201,7 @@
 </tbody>
 </table>
 <p>Anything else (arithmetic, comprehensions, lambdas, slices, dunder names, attribute access on non-dict objects, other calls) is rejected with a <code>ValidationError</code>. If an expression fails at evaluation time (say it compares <code>None &lt; 3</code>), the event counts as <em>not matching</em> and a warning is logged.</p>
-<p>For logic that doesn't fit, pass a callable. It receives the <code>TriggerEvent</code>:</p>
+<p>For logic that doesn't fit, pass a callable. It receives the <code>TriggerEvent</code> and is called synchronously, so it must be a regular <code>def</code> function: an <code>async def</code> filter is rejected when the <code>TriggerConfig</code> is created (it would never be awaited, and every event would pass):</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">is_new_bug</span><span class="p">(</span><span class="n">event</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 </span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>    <span class="n">issue</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"issue"</span><span class="p">,</span> <span class="p">{})</span>
 </span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>    <span class="k">return</span> <span class="n">event</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"action"</span><span class="p">)</span> <span class="o">==</span> <span class="s2">"opened"</span> <span class="ow">and</span> <span class="nb">any</span><span class="p">(</span>
@@ -10430,7 +10431,7 @@
 <li><strong><code>idle_timeout</code> with a sparse schedule.</strong> An idle-suspended process wakes on the next trigger event, so a cron agent still runs on time. But <code>process.status()</code> shows <code>suspended</code> between runs; check <code>suspend_reason == "idle"</code> before alerting on it.</li>
 <li><strong>Removing a trigger by position.</strong> IDs are stable digests, not list positions. Read them from <code>GET /triggers</code> or <code>status()["triggers"]</code>; <code>static_&lt;n&gt;</code> IDs still work for <code>DELETE</code> but are deprecated.</li>
 <li><strong>Changing a trigger's config changes its ID.</strong> The ID is a digest of the config, so editing a trigger (a new cron expression, another port) gives it a new ID. Remove the old one and add the new one.</li>
-<li><strong><code>event</code> and <code>message</code> triggers without a bus.</strong> Without <code>AgentRuntime(event_bus=...)</code> or <code>broker=...</code>, the trigger can't be created: the process fails to start, and <code>POST /triggers</code> answers <code>422</code>.</li>
+<li><strong><code>event</code> and <code>message</code> triggers without a bus.</strong> Without <code>AgentRuntime(event_bus=...)</code> or <code>broker=...</code>, the trigger can't be created: the process fails to start, and <code>POST /triggers</code> answers <code>422</code>. <code>promptise runtime start</code> has an in-process event bus, so its <code>event</code> triggers work; <code>message</code> triggers still need a broker.</li>
 <li><strong>Suspended is not stopped.</strong> A suspended process keeps accepting and queueing events (the webhook answers <code>202</code>). Stop it if senders should be told to retry.</li>
 </ul>
 <div class="admonition info">
@@ -10482,7 +10483,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="October 19, 2026 22:24:07 UTC">2026-10-19</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="October 20, 2026 21:45:05 UTC">2026-10-20</span>
   </span>
 
     

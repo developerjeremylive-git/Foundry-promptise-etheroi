@@ -9952,7 +9952,7 @@
 <tbody>
 <tr>
 <td>Unknown top-level key (<code>journal_level: full</code>)</td>
-<td><code>journal_level</code> / <code>Extra inputs are not permitted</code></td>
+<td><code>manifest: unknown key(s) ['journal_level']; valid keys are [...] (did you mean 'journal_level' -&gt; 'journal'?)</code></td>
 </tr>
 <tr>
 <td>Unknown key in a section (<code>health:</code>, <code>context:</code>, <code>journal:</code>, <code>open_mode:</code>, <code>secrets:</code>, <code>budget:</code>, <code>mission:</code>)</td>
@@ -9960,11 +9960,11 @@
 </tr>
 <tr>
 <td>Unknown key in <code>memory:</code></td>
-<td><code>memory: unknown key(s) [...]; valid keys are ['auto_store', 'collection', 'max', 'min_score', 'persist_directory', 'provider', 'timeout', 'user_id']</code></td>
+<td><code>memory: unknown key(s) ['provder']; valid keys are ['auto_store', 'collection', 'max', 'min_score', 'persist_directory', 'provider', 'timeout', 'user_id'] (did you mean 'provder' -&gt; 'provider'?)</code></td>
 </tr>
 <tr>
 <td>Unknown key in <code>config:</code></td>
-<td><code>config: unknown key(s) ['restart_on_failure']; valid keys are ['adaptive', 'approval', ...]</code></td>
+<td><code>config: unknown key(s) ['concurency']; valid keys are ['adaptive', 'approval', ...] (did you mean 'concurency' -&gt; 'concurrency'?)</code></td>
 </tr>
 <tr>
 <td>A <code>config:</code> key that has its own section</td>
@@ -9991,6 +9991,10 @@
 <td><code>Trigger at index 0 is missing required 'type' field</code></td>
 </tr>
 <tr>
+<td>An invalid trigger (an unknown key, a missing <code>cron_expression</code>, a bad time zone)</td>
+<td><code>triggers[0] (cron): unknown key(s) ['cron']; valid keys are [...]</code></td>
+</tr>
+<tr>
 <td>A hook with an unknown event</td>
 <td><code>hooks[0]: ... unknown hook event 'on_start'; valid events are ['session_start', ...]</code></td>
 </tr>
@@ -10005,7 +10009,8 @@
 </tbody>
 </table>
 <p>The exception message starts with <code>Manifest validation failed:</code>; <code>exc.errors</code> holds the Pydantic error details and <code>exc.file_path</code> the file.</p>
-<p>Trigger entries are checked in full (unknown keys, a missing <code>cron_expression</code>, a bad time zone) when the manifest is converted with <code>manifest_to_process_config()</code>, which <code>AgentRuntime.load_manifest()</code> and <code>promptise runtime start</code> call; the error there is a <code>pydantic.ValidationError</code> for <code>TriggerConfig</code>. <code>load_manifest()</code> and <code>promptise runtime validate</code> only check that each trigger has a <code>type</code>.</p>
+<p>Trigger entries are checked in full (unknown keys, the fields their type needs, a bad time zone) when the manifest is loaded, so <code>load_manifest()</code>, <code>promptise runtime validate</code> and <code>promptise runtime start</code> all report a bad trigger. Unknown keys, here and in every other section, come with "did you mean" hints.</p>
+<p>A <code>${VAR}</code> that is not set raises <code>ManifestEnvVarError</code>, which is both a <code>ManifestError</code> and an <code>EnvVarNotFoundError</code>. <code>promptise runtime validate</code> reports it for that file and goes on with the next one; <code>promptise runtime start</code> checks every manifest first and starts nothing when one fails.</p>
 <hr />
 <h2 id="sections">Sections<a class="headerlink" href="#sections" title="Link to this section">&para;</a></h2>
 <h3 id="identity">identity<a class="headerlink" href="#identity" title="Link to this section">&para;</a></h3>
@@ -10199,9 +10204,9 @@
 <hr />
 <h2 id="environment-variables-and-secrets">Environment variables and secrets<a class="headerlink" href="#environment-variables-and-secrets" title="Link to this section">&para;</a></h2>
 <p><code>${VAR}</code> and <code>${VAR:-default}</code> references are resolved from the environment when the manifest is loaded, in every value of the file, with one exception: the values under <code>secrets.secrets</code>. Those stay references in the loaded config and are resolved by the process's <a href="../governance/secrets/">secret scope</a> when it starts, so the config, <code>repr()</code> and any dump of it never hold the secret value. A reference to an unset variable without a default fails at load time in both cases:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>EnvVarNotFoundError: Environment variable 'MONITORING_API_KEY' not found (referenced in: secrets.secrets.api_key)
+<div class="language-text highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>ManifestEnvVarError: agents/monitor.agent: Environment variable 'MONITORING_API_KEY' not found (referenced in: secrets.secrets.api_key)
 </span></code></pre></div>
-<p>To keep a credential out of plain config, put it in <code>secrets.secrets</code> and have the agent read it with the <code>get_secret</code> tool. Other secret-bearing values, such as a webhook's <code>hmac_secret</code> or a server's credential headers, are resolved at load time; they are stored as <code>SecretStr</code> (masked in <code>repr()</code> and JSON dumps) but held in memory in plain form.</p>
+<p>To keep a credential out of plain config, put it in <code>secrets.secrets</code>. In <a href="../meta-tools/">open mode</a> the agent reads it with the <code>get_secret</code> tool; a strict-mode process has no such tool, so pass the credential to your own code or MCP server instead (see <a href="../governance/secrets/">Secret scoping</a>). Other secret-bearing values, such as a webhook's <code>hmac_secret</code> or a server's credential headers, are resolved at load time; they are stored as <code>SecretStr</code> (masked in <code>repr()</code> and JSON dumps) but held in memory in plain form.</p>
 <div class="language-yaml highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="nt">secrets</span><span class="p">:</span>
 </span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="w">  </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
 </span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="w">  </span><span class="nt">secrets</span><span class="p">:</span>
@@ -10287,7 +10292,7 @@
 <tr>
 <td><code>load_manifest(path)</code></td>
 <td><code>AgentManifestSchema</code></td>
-<td><code>ManifestError</code> (missing file, unreadable, invalid YAML, not a mapping), <code>ManifestValidationError</code> (schema), <code>EnvVarNotFoundError</code> (unset <code>${VAR}</code>)</td>
+<td><code>ManifestError</code> (missing file, unreadable, invalid YAML, not a mapping), <code>ManifestValidationError</code> (schema), <code>ManifestEnvVarError</code> (unset <code>${VAR}</code>; also an <code>EnvVarNotFoundError</code>)</td>
 </tr>
 <tr>
 <td><code>validate_manifest(path)</code></td>
@@ -10327,7 +10332,7 @@
 <hr />
 <h2 id="common-pitfalls">Common pitfalls<a class="headerlink" href="#common-pitfalls" title="Link to this section">&para;</a></h2>
 <ul>
-<li><strong>Expecting <code>validate</code> to check triggers.</strong> <code>promptise runtime validate</code> passes a trigger with a misspelt field; the error shows when the manifest is converted (at <code>start</code>). Run <code>manifest_to_process_config(load_manifest(path))</code> in CI to catch it early.</li>
+<li><strong>Expecting <code>get_secret</code> in strict mode.</strong> The agent's <code>get_secret</code> tool exists only in open mode; in strict mode <code>secrets.secrets</code> holds values for your code, not for the model.</li>
 <li><strong>A manifest process that "remembers" old state.</strong> Without a <code>journal:</code> section the process journals to <code>.promptise/journal</code> and recovers on start. Set <code>journal: {level: none}</code> or <code>recover_on_start: false</code> if each start should be fresh.</li>
 <li><strong>Putting an option in two places.</strong> <code>config: {instructions: ...}</code> next to a top-level <code>instructions:</code> fails; so do <code>world:</code> together with <code>context: initial_state</code>.</li>
 <li><strong>Secrets in plain values.</strong> Only <code>secrets.secrets</code> keeps <code>${VAR}</code> references until start. A literal API key anywhere else is in the file and in the loaded config.</li>
@@ -10373,7 +10378,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="October 19, 2026 22:24:07 UTC">2026-10-19</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="October 20, 2026 21:16:04 UTC">2026-10-20</span>
   </span>
 
     

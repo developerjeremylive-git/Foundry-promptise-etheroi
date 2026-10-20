@@ -9719,7 +9719,7 @@
 <tr>
 <td>2</td>
 <td><strong>Processes</strong></td>
-<td>Per process: state, process ID, model, invocations, failures, triggers, queue size, concurrency, heartbeat interval, uptime</td>
+<td>Per process: name, state, process ID, model, invocations, failures, triggers, queue size, concurrency, heartbeat interval, uptime. On a narrow terminal the least important columns are left out first (heartbeat, process ID, concurrency, uptime...); name, state and model always show</td>
 </tr>
 <tr>
 <td>3</td>
@@ -9734,12 +9734,12 @@
 <tr>
 <td>5</td>
 <td><strong>Logs</strong></td>
-<td>Captured Python log records (runtime logs) and <code>state.journal_entries</code></td>
+<td>Captured Python log records (runtime logs) and <code>state.journal_entries</code>, each in its own panel with a share of the height (newest first)</td>
 </tr>
 <tr>
 <td>6</td>
 <td><strong>Events</strong></td>
-<td><code>state.events</code> (trigger events) and <code>state.invocations</code> (invocation results)</td>
+<td><code>state.events</code> (trigger events, with a one-line payload preview) and <code>state.invocations</code> (invocation results)</td>
 </tr>
 <tr>
 <td>7</td>
@@ -10032,7 +10032,7 @@
 <tr>
 <td><code>trigger_id</code></td>
 <td><code>str</code></td>
-<td><code>&lt;process&gt;/&lt;type&gt;</code> as set by the collector (not the API's stable trigger ID)</td>
+<td>The trigger's stable ID, the same as the API's (for example <code>cron-2721f2b845</code>)</td>
 </tr>
 <tr>
 <td><code>trigger_type</code></td>
@@ -10170,7 +10170,7 @@
 <ul>
 <li><strong>The dashboard takes over the terminal.</strong> It draws in the alternate screen and reads keys directly; you can't use the same terminal for other commands. Always call <code>dashboard.stop()</code> (in a <code>finally</code>) so the terminal is restored.</li>
 <li><strong>Log output moves into the Logs tab.</strong> While the dashboard runs, the root logger is set to <code>DEBUG</code> and existing console handlers of the root, <code>promptise.runtime</code>, <code>httpx</code>, <code>uvicorn</code> and <code>asyncio</code> loggers are muted; <code>stop()</code> restores them.</li>
-<li><strong>Empty Events, Recent Activity and journal panels.</strong> The collector doesn't fill them; call the <code>state.record_*</code> methods from your own code to use them.</li>
+<li><strong>An empty journal panel.</strong> The collector reads the journal on the runtime's event loop; create it there (or pass <code>loop=</code>), and give the process a <code>journal</code>.</li>
 <li><strong>Starting the dashboard off the runtime's loop.</strong> Commands then can't run and the journal panel stays empty; create the collector and call <code>dashboard.start()</code> inside the coroutine that runs the runtime.</li>
 <li><strong>Shorter intervals cost more.</strong> The collector polls every process each <code>interval</code>; <code>2.0</code> is plenty for a quiet runtime.</li>
 <li><strong>Not with <code>--detach</code>.</strong> The dashboard needs a foreground terminal.</li>
@@ -10212,7 +10212,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="October 19, 2026 22:24:07 UTC">2026-10-19</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="October 20, 2026 21:16:04 UTC">2026-10-20</span>
   </span>
 
     

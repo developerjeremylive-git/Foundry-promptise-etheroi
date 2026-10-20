@@ -10452,7 +10452,7 @@
 <li>a command hook (a <code>hooks</code> entry with a <code>command</code>), or</li>
 <li>open mode with <code>open_mode.allow_tool_creation</code> (the default in open mode). The agent's <code>create_tool</code> runs model-written Python inside the runtime's process, and its restricted builtins are not a sandbox, so it amounts to running commands. Deploy open-mode agents with <code>"open_mode": {"allow_tool_creation": false}</code>.</li>
 </ul>
-<p>Anyone with the token could otherwise run any command as the runtime's user. Use HTTP MCP servers and callback hooks, load such processes from manifests on the host, or, if every token holder may run commands there, enable it:</p>
+<p>Anyone with the token could otherwise run any command as the runtime's user. Use HTTP MCP servers instead of stdio ones and leave out command hooks (a deploy is JSON, so it can't carry a Python callback hook either; register hooks on the host, in a manifest or in code), load such processes from manifests on the host, or, if every token holder may run commands there, enable it:</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">api</span> <span class="o">=</span> <span class="n">OrchestrationAPI</span><span class="p">(</span><span class="n">runtime</span><span class="p">,</span> <span class="n">auth_token</span><span class="o">=</span><span class="s2">"$</span><span class="si">{ORCHESTRATION_API_TOKEN}</span><span class="s2">"</span><span class="p">,</span> <span class="n">allow_command_deploys</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </span></code></pre></div>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>promptise<span class="w"> </span>runtime<span class="w"> </span>start<span class="w"> </span>agents/<span class="w"> </span>--allow-command-deploys
@@ -10635,7 +10635,7 @@
 <tr>
 <td><code>GET</code></td>
 <td><code>/processes/{name}/triggers</code></td>
-<td>Config and agent-added triggers with stable IDs; <code>hmac_secret</code> and credential-like <code>custom_config</code> values masked</td>
+<td>Config and agent-added triggers with stable IDs; <code>hmac_secret</code>, credential-like <code>custom_config</code> values and URL user info masked</td>
 <td>--</td>
 <td><code>200</code></td>
 </tr>
@@ -10905,7 +10905,7 @@
 </tr>
 </tbody>
 </table>
-<p>Adding a trigger identical to one already configured gets <code>409 TRIGGER_EXISTS</code>; an invalid config or one that can't start gets <code>422 INVALID_CONFIG</code>; a <code>${VAR}</code> reference gets <code>403 ENV_REFERENCES_NOT_ALLOWED</code> and a <code>watch_path</code> outside <code>data_dir</code> <code>403 PATH_NOT_ALLOWED</code>; an unknown ID gets <code>404 TRIGGER_NOT_FOUND</code>. In the listing, <code>hmac_secret</code> is masked, and so are the values of <code>custom_config</code> keys that look like credentials (names containing <code>secret</code>, <code>token</code>, <code>password</code>, <code>api_key</code>, <code>auth</code>, <code>credential</code>, <code>signature</code> or <code>cookie</code>). The old position-based IDs (<code>static_0</code>, <code>static_1</code>, ...) are still accepted on <code>DELETE</code>; the response then carries a <code>warning</code> naming the stable ID to use instead.</p>
+<p>Adding a trigger identical to one already configured gets <code>409 TRIGGER_EXISTS</code>; an invalid config or one that can't start gets <code>422 INVALID_CONFIG</code>; a <code>${VAR}</code> reference gets <code>403 ENV_REFERENCES_NOT_ALLOWED</code> and a <code>watch_path</code> outside <code>data_dir</code> <code>403 PATH_NOT_ALLOWED</code>; an unknown ID gets <code>404 TRIGGER_NOT_FOUND</code>. In the listing, <code>hmac_secret</code> is masked, and so are the values of <code>custom_config</code> keys that look like credentials (names containing <code>secret</code>, <code>token</code>, <code>password</code>, <code>api_key</code>, <code>auth</code>, <code>credential</code>, <code>signature</code> or <code>cookie</code>) and the user info of any URL value (<code>postgres://app:pw@db/x</code> is listed as <code>postgres://**********@db/x</code>). The old position-based IDs (<code>static_0</code>, <code>static_1</code>, ...) are still accepted on <code>DELETE</code>; the response then carries a <code>warning</code> naming the stable ID to use instead.</p>
 <h3 id="context-state">Context state<a class="headerlink" href="#context-state" title="Link to this section">&para;</a></h3>
 <p><code>PATCH /context</code> with <code>{"state": {key: value}}</code> writes all keys or none: if any key is not writable the answer is <code>403 WRITE_DENIED</code> naming them, and nothing is written. Writes are recorded with source <code>"api"</code> and journaled. Other top-level fields get <code>422 UNKNOWN_FIELD</code>. See <a href="../context/">Agent Context</a>.</p>
 <h3 id="secrets">Secrets<a class="headerlink" href="#secrets" title="Link to this section">&para;</a></h3>
@@ -11678,7 +11678,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="October 17, 2026 11:06:54 UTC">2026-10-17</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="October 20, 2026 21:45:05 UTC">2026-10-20</span>
   </span>
 
     

@@ -9721,7 +9721,7 @@
 <ul>
 <li><strong><code>event_notifier</code></strong>: every process emits its <code>process.*</code>, <code>invocation.*</code> and governance events through it. A process never stops a shared notifier; <code>stop_all()</code> drains it after the last process has stopped, so every <code>process.stopped</code> is delivered before <code>stop_all()</code> returns.</li>
 <li><strong><code>hooks</code></strong>: a <a href="../hooks/"><code>HookManager</code></a> whose hooks run for every process's lifecycle events, after each process's own <code>hooks</code>. <code>ctx.process_id</code> names the process.</li>
-<li><strong><code>event_bus</code></strong> and <strong><code>broker</code></strong>: objects you provide; the runtime does not create them. <code>event</code> triggers call <code>await event_bus.subscribe(event_type, handler)</code> and <code>await event_bus.unsubscribe(event_type, handler)</code>; <code>message</code> triggers call <code>await broker.subscribe(topic, handler)</code> (which returns a subscription ID) and <code>await broker.unsubscribe(subscription_id)</code>. See <a href="../triggers/event-webhook/">Event &amp; Webhook triggers</a>.</li>
+<li><strong><code>event_bus</code></strong> and <strong><code>broker</code></strong>: objects you provide; <code>AgentRuntime</code> does not create them. <code>promptise.runtime.InProcessEventBus</code> is a ready-made bus for processes in one Python process, and <code>promptise runtime start</code> gives its runtime one. <code>event</code> triggers call <code>await event_bus.subscribe(event_type, handler)</code> and <code>await event_bus.unsubscribe(event_type, handler)</code>; <code>message</code> triggers call <code>await broker.subscribe(topic, handler)</code> (which returns a subscription ID) and <code>await broker.unsubscribe(subscription_id)</code>. See <a href="../triggers/event-webhook/">Event &amp; Webhook triggers</a>.</li>
 </ul>
 <hr />
 <h2 id="registering-processes">Registering processes<a class="headerlink" href="#registering-processes" title="Link to this section">&para;</a></h2>
@@ -9960,7 +9960,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="October 19, 2026 22:24:07 UTC">2026-10-19</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="October 20, 2026 20:59:21 UTC">2026-10-20</span>
   </span>
 
     

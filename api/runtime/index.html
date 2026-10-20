@@ -10403,6 +10403,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#promptise.runtime.budget.BudgetState.refund_irreversible" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        refund_irreversible
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#promptise.runtime.budget.BudgetState.remaining" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -18719,6 +18730,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#promptise.runtime.budget.BudgetState.refund_irreversible" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        refund_irreversible
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#promptise.runtime.budget.BudgetState.remaining" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -25477,7 +25499,17 @@ and a :class:<code>ValueError</code>).</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>and <code>pending_events</code>), <code>recovered</code> (after a journal</p>
+                <p>and <code>pending_events</code>; for an event or message trigger,</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="dict">dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p><code>dropped_events</code>), <code>recovered</code> (after a journal</p>
               </div>
             </td>
           </tr>
@@ -33590,6 +33622,8 @@ window.</p>
 
 
     <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="promptise.runtime.triggers.event._OverflowCounter">_OverflowCounter</span></code></p>
 
 
 
@@ -33826,6 +33860,8 @@ source will fire the trigger.</p>
 
 
     <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="promptise.runtime.triggers.event._OverflowCounter">_OverflowCounter</span></code></p>
 
 
 
@@ -34917,6 +34953,28 @@ must not execute the tool.</p>
         <p>Synchronous :meth:<code>record_tool_call</code> (thread-safe).</p>
 <p>Used by the budget guard callback, which LangChain may run on a
 worker thread for synchronous tools.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h5 id="promptise.runtime.budget.BudgetState.refund_irreversible" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">refund_irreversible</span><span class="p">(</span><span class="n">tool_name</span><span class="p">)</span></code>
+
+<a href="#promptise.runtime.budget.BudgetState.refund_irreversible" class="headerlink" title="Link to this section">&para;</a></h5>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Give back the irreversible action of a call that did not run.</p>
+<p>A call is counted when it starts; when an approval gate then denies
+it, nothing irreversible happened, so it must not use up
+<code>max_irreversible_per_run</code>.  Other counters (tool calls, cost)
+keep the attempt.</p>
 
 
     </div>
@@ -41899,8 +41957,8 @@ be reconstructed <em>as of just before</em> this entry).</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Number of entries that <em>would be ignored</em> by
-the rewind (those after the target).</p>
+                <p>Number of entries the rewind undoes: the
+target and every entry after it.</p>
               </div>
             </td>
           </tr>
@@ -42355,6 +42413,17 @@ callback=...)</code>).</p>
             <td>
               <div class="doc-md-description">
                 <p>If the file cannot be read or parsed.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="promptise.runtime.exceptions.ManifestEnvVarError">ManifestEnvVarError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>A <code>${VAR}</code> names an unset environment
+variable (also an :class:<code>~promptise.exceptions.EnvVarNotFoundError</code>).</p>
               </div>
             </td>
           </tr>
@@ -45959,7 +46028,9 @@ per node with <code>register_node(..., auth_token=...)</code>).</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>If aiohttp is not available.</p>
+                <p>If aiohttp is not available, the node answers with
+an error status, or (:class:<code>NodeUnreachableError</code>) it can't
+be reached.</p>
               </div>
             </td>
           </tr>
@@ -46106,7 +46177,8 @@ per node with <code>register_node(..., auth_token=...)</code>).</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>If the node rejects the request (non-2xx).</p>
+                <p>If the node rejects the request (non-2xx), or
+:class:<code>NodeUnreachableError</code> if it can't be reached.</p>
               </div>
             </td>
           </tr>
@@ -46369,7 +46441,8 @@ to the coordinator's <code>auth_token</code>).</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>If the node rejects the request (non-2xx).</p>
+                <p>If the node rejects the request (non-2xx), or
+:class:<code>NodeUnreachableError</code> if it can't be reached.</p>
               </div>
             </td>
           </tr>
@@ -46506,7 +46579,8 @@ to the coordinator's <code>auth_token</code>).</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>If the node rejects the request (non-2xx).</p>
+                <p>If the node rejects the request (non-2xx), or
+:class:<code>NodeUnreachableError</code> if it can't be reached.</p>
               </div>
             </td>
           </tr>

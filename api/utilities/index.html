@@ -18722,7 +18722,7 @@ counts as a write -- the MCP default for <code>readOnlyHint</code> is false.</p>
     <div class="doc doc-contents ">
 
         <p>Remove all cached entries for a user.</p>
-<p>Use for GDPR right-to-erasure compliance.</p>
+<p>Use it to delete one user's cached data on request.</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -18777,7 +18777,7 @@ entries were stored under.</p>
 <details class="note" open>
   <summary>Note</summary>
   <p>This purges the <strong>per-user</strong> scope (<code>user:&lt;id&gt;</code>), which is the
-default and the GDPR-relevant one.  A cache created with
+default and the one that holds a user's data.  A cache created with
 <code>scope="per_session"</code> keys entries by the user's session, so
 <code>purge_user</code> does not remove them; they expire with their TTL.</p>
 </details>
@@ -19939,7 +19939,7 @@ provider = OpenAIEmbeddingProvider(
 
     <div class="doc doc-contents ">
 
-        <p>Remove all entries for a user (GDPR compliance).</p>
+        <p>Remove all entries for a user, for example when they ask you to delete their data.</p>
 
 
     </div>
@@ -20188,7 +20188,7 @@ auto-generated per process.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Remove all entries for a user (GDPR compliance).</p>
+        <p>Remove all entries for a user, for example when they ask you to delete their data.</p>
 
 
     </div>

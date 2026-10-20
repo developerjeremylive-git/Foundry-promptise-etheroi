@@ -13664,7 +13664,7 @@ Defaults to five seconds; the metadata server is link-local.</p>
 
 
 
-        <p>SPIFFE credential source using the Workload API via pyspiffe.</p>
+        <p>SPIFFE credential source using the Workload API via py-spiffe.</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -14352,7 +14352,7 @@ expiry. Returns an empty dict if anything is malformed.</p>
 <li>Conflicting arguments were supplied (for example, both
   <code>token_file</code> and <code>token_fn</code> to the OIDC credential).</li>
 <li>A required optional dependency is missing — boto3 for AWS, or
-  pyspiffe for SPIFFE SDK mode. The exception message names the
+  py-spiffe (the <code>spiffe</code> package) for SPIFFE SDK mode. The exception message names the
   exact <code>pip install</code> command that resolves it.</li>
 </ul>
 

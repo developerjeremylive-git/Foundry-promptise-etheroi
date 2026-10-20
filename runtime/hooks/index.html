@@ -9790,7 +9790,7 @@
 </span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">    </span><span class="nt">command</span><span class="p">:</span><span class="w"> </span><span class="s">"./hooks/notify.sh</span><span class="nv"> </span><span class="s">--channel</span><span class="nv"> </span><span class="s">ops"</span>
 </span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">    </span><span class="nt">env_passthrough</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">SLACK_TOKEN</span><span class="p p-Indicator">]</span>
 </span></code></pre></div>
-<p>Each entry is a <code>HookConfig</code> with a <code>command</code>. A manifest resolves <code>${VAR}</code> references when it is loaded (everywhere except the <code>secrets:</code> section), so <code>env: {SLACK_TOKEN: ${SLACK_TOKEN}}</code> would need the variable at load time and put its value into the loaded config. <code>env_passthrough</code> hands the variable to the program when the hook runs instead. A <code>callback</code> key in a manifest is an error (<code>hooks[0]: a manifest hook runs a 'command'; Python callbacks are registered in code (process.hooks)</code>). The old top-level <code>entrypoint</code> key is not read by the runtime; a manifest that sets it loads with a <code>FutureWarning</code>.</p>
+<p>Each entry is a <code>HookConfig</code> with a <code>command</code>. A manifest resolves <code>${VAR}</code> references when it is loaded, except in the <code>secrets:</code> section and in hook <code>env:</code> values: those stay <code>${VAR}</code> references in the loaded config and are resolved each time the hook runs. Loading still checks that every variable they name is set, so <code>env: {SLACK_TOKEN: ${SLACK_TOKEN}}</code> needs the variable at load time but never puts its value into the loaded config. <code>env_passthrough</code> hands a host variable to the program as it is. A <code>callback</code> key in a manifest is an error (<code>hooks[0]: a manifest hook runs a 'command'; Python callbacks are registered in code (process.hooks)</code>). The old top-level <code>entrypoint</code> key is not read by the runtime; a manifest that sets it loads with a <code>FutureWarning</code>.</p>
 <h3 id="deploying-command-hooks-over-the-control-api">Deploying command hooks over the control API<a class="headerlink" href="#deploying-command-hooks-over-the-control-api" title="Link to this section">&para;</a></h3>
 <p>A command hook runs a program on the runtime's host. The <a href="../api/">Orchestration API</a> therefore refuses a <code>POST /api/v1/processes</code> whose config has a command hook (or a stdio MCP server, or open-mode tool creation) with <code>403 COMMANDS_NOT_ALLOWED</code>, unless the API was created with <code>OrchestrationAPI(..., allow_command_deploys=True)</code> (<code>promptise runtime start --allow-command-deploys</code>). Anyone with the API token could otherwise run any command as the runtime's user. Callback hooks can't be sent over HTTP at all, and processes you load from manifests on the host are not checked.</p>
 <hr />
@@ -9875,7 +9875,7 @@
 <tr>
 <td><code>TASK_CREATED</code></td>
 <td>A trigger event is about to be queued (from a trigger or <code>inject()</code>)</td>
-<td><code>event_id</code>, <code>trigger_id</code>, <code>trigger_type</code></td>
+<td><code>event_id</code>, <code>trigger_id</code>, <code>trigger_type</code>, <code>payload_summary</code> (the payload as one line of JSON, at most 120 characters, secrets redacted)</td>
 <td>Yes: the event is dead-lettered (<code>"blocked by hook"</code>) instead of queued</td>
 </tr>
 <tr>
@@ -9914,7 +9914,7 @@
 </tbody>
 </table>
 <p><code>CONFIG_CHANGE</code> names the change in <code>change</code>: <code>"instructions"</code>, <code>"tool"</code>, <code>"mcp_server"</code>, <code>"trigger_added"</code>, <code>"trigger_removed"</code>, <code>"budget"</code>, <code>"health"</code>, <code>"mission"</code>, <code>"rollback"</code> or <code>"rewind"</code>.</p>
-<p><code>TASK_COMPLETED</code>'s <code>outcome</code> is <code>"success"</code>, <code>"retrying"</code>, <code>"failed"</code>, <code>"blocked"</code> or <code>"dead_lettered"</code>.</p>
+<p><code>TASK_COMPLETED</code>'s <code>outcome</code> is <code>"success"</code>, <code>"retrying"</code>, <code>"failed"</code>, <code>"blocked"</code>, <code>"dead_lettered"</code> or <code>"refused"</code> (the run did not start: <code>max_runs_per_day</code> was reached; the event is dead-lettered with reason <code>"budget: max_runs_per_day"</code>). The event is no longer the worker's when the hook runs: a <code>stop()</code> that arrives while a <code>task_completed</code> hook is still running doesn't dead-letter an event whose run has finished.</p>
 <p><code>HookEvent</code> values are the lowercase names (<code>HookEvent.USER_PROMPT_SUBMIT.value == "user_prompt_submit"</code>). <code>BLOCKABLE_EVENTS</code> is the frozenset of the six blockable events.</p>
 <hr />
 <h2 id="hookcontext">HookContext<a class="headerlink" href="#hookcontext" title="Link to this section">&para;</a></h2>
@@ -10180,7 +10180,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="October 19, 2026 22:24:07 UTC">2026-10-19</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="October 20, 2026 21:55:30 UTC">2026-10-20</span>
   </span>
 
     
