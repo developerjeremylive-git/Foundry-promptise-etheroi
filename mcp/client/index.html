@@ -10012,7 +10012,7 @@ you manage sessions yourself.</p>
 </span><span id="__span-18-2"><a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a>Check the URL (http://localhost:8080); Promptise servers serve MCP at /mcp.
 </span></code></pre></div>
 <p>Retrying with the same configuration fails the same way, so fix the credentials or URL instead of retrying.</p>
-<p>Other connection failures (server down, connection refused) raise a plain <code>MCPClientError</code> such as <code>Failed to connect to http://localhost:8080/mcp (ConnectError: ...)</code>. If an established connection drops during a call, that call raises <code>MCPClientError</code> (<code>Connection to ... was lost</code>) at once. The failure never cancels the task that opened the client, because the client owns its transport in a task of its own. That also makes it safe to close a client from a different task than the one that opened it.</p>
+<p>Other connection failures (server down, connection refused) raise a plain <code>MCPClientError</code> such as <code>Failed to connect to http://localhost:8080/mcp (ConnectError: ...)</code>. If an established connection drops during a call, that call raises <code>MCPClientError</code> (<code>Connection to ... was lost</code>) at once. An error the server answers with is not a lost connection, whatever its JSON-RPC code: reading a resource whose handler raised <code>ToolError</code> raises <code>MCPClientError: Failed to read resource 'docs://pages/holidays': There is no handbook page 'holidays'.</code>, and the session keeps working. The failure never cancels the task that opened the client, because the client owns its transport in a task of its own. That also makes it safe to close a client from a different task than the one that opened it.</p>
 <h3 id="reconnecting-after-a-server-restart">Reconnecting after a server restart<a class="headerlink" href="#reconnecting-after-a-server-restart" title="Link to this section">&para;</a></h3>
 <p>A Streamable HTTP server keeps its sessions in memory. After a restart or redeploy it answers the old <code>mcp-session-id</code> with <code>404</code>, and the MCP specification requires the client to start a new session. <code>MCPClient</code> does this transparently:</p>
 <ol>
@@ -10348,7 +10348,7 @@ you manage sessions yourself.</p>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="October 20, 2026 22:22:15 UTC">2026-10-20</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="October 21, 2026 01:54:21 UTC">2026-10-21</span>
   </span>
 
     

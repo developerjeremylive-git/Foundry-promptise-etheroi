@@ -46024,13 +46024,23 @@ per node with <code>register_node(..., auth_token=...)</code>).</p>
           </tr>
           <tr class="doc-section-item">
             <td>
+                  <code><span title="promptise.runtime.distributed.coordinator.NodeUnreachableError">NodeUnreachableError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If the node can't be reached (a
+:class:<code>RuntimeError</code>).</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
                   <code><span title="RuntimeError">RuntimeError</span></code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>If aiohttp is not available, the node answers with
-an error status, or (:class:<code>NodeUnreachableError</code>) it can't
-be reached.</p>
+                <p>If aiohttp is not available or the node answers
+with an error status.</p>
               </div>
             </td>
           </tr>
